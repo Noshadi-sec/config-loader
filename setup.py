@@ -7,5 +7,8 @@ setup(
     author="Your Name",
     packages=find_packages(),
     python_requires=">=3.8",
-    install_requires=[],
+    install_requires=[
+        "pyyaml>=6.0",
+        "tomli>=1.2.0;python_version<'3.11'",
+    ],
 )
