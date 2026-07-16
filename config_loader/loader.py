@@ -104,10 +104,7 @@ class ConfigLoader:
                 )
         
         try:
-            if hasattr(tomllib, 'loads'):
-                data = tomllib.loads(content)
-            else:
-                data = tomllib.load(open(filepath, 'rb'))
+            data = tomllib.loads(content)
             return data if isinstance(data, dict) else {}
         except Exception as e:
             raise IOError(f"Failed to parse TOML file {filepath}: {e}") from e
