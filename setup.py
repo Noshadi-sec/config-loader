@@ -10,5 +10,6 @@ setup(
     install_requires=[
         "pyyaml>=6.0",
         "tomli>=1.2.0;python_version<'3.11'",
+        "tomli-w>=1.0.0",
     ],
 )
