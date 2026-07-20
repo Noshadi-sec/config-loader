@@ -119,3 +119,61 @@ inner = "data"
         
         result = loader.load(str(config_file))
         assert result == {}
+    
+    def test_save_json(self, tmp_path):
+        loader = ConfigLoader()
+        config_file = tmp_path / "config.json"
+        data = {"key": "value", "number": 42}
+        
+        loader.save(data, str(config_file))
+        
+        assert config_file.exists()
+        result = loader.load(str(config_file))
+        assert result == data
+    
+    def test_save_yaml(self, tmp_path):
+        loader = ConfigLoader()
+        config_file = tmp_path / "config.yaml"
+        data = {"key": "value", "nested": {"inner": "data"}}
+        
+        loader.save(data, str(config_file))
+        
+        assert config_file.exists()
+        result = loader.load(str(config_file))
+        assert result == data
+    
+    def test_save_toml(self, tmp_path):
+        loader = ConfigLoader()
+        config_file = tmp_path / "config.toml"
+        data = {"key": "value", "nested": {"inner": "data"}}
+        
+        loader.save(data, str(config_file))
+        
+        assert config_file.exists()
+        result = loader.load(str(config_file))
+        assert result == data
+    
+    def test_save_creates_parent_dirs(self, tmp_path):
+        loader = ConfigLoader()
+        config_file = tmp_path / "nested" / "dir" / "config.json"
+        data = {"key": "value"}
+        
+        loader.save(data, str(config_file))
+        
+        assert config_file.exists()
+        assert config_file.parent.exists()
+    
+    def test_save_invalid_type(self, tmp_path):
+        loader = ConfigLoader()
+        config_file = tmp_path / "config.json"
+        
+        with pytest.raises(TypeError, match="must be a dictionary"):
+            loader.save([1, 2, 3], str(config_file))
+    
+    def test_save_unsupported_format(self, tmp_path):
+        loader = ConfigLoader()
+        config_file = tmp_path / "config.xml"
+        data = {"key": "value"}
+        
+        with pytest.raises(ValueError, match="Unsupported format"):
+            loader.save(data, str(config_file))
