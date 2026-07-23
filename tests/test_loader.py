@@ -120,6 +120,39 @@ inner = "data"
         result = loader.load(str(config_file))
         assert result == {}
     
+    def test_load_with_defaults_file_exists(self, tmp_path):
+        loader = ConfigLoader()
+        config_file = tmp_path / "config.json"
+        data = {"key": "value"}
+        config_file.write_text(json.dumps(data))
+        
+        result = loader.load_with_defaults(str(config_file), {"default": "value"})
+        assert result == data
+    
+    def test_load_with_defaults_file_missing(self, tmp_path):
+        loader = ConfigLoader()
+        config_file = tmp_path / "missing.json"
+        defaults = {"key": "default"}
+        
+        result = loader.load_with_defaults(str(config_file), defaults)
+        assert result == defaults
+    
+    def test_load_with_defaults_file_invalid(self, tmp_path):
+        loader = ConfigLoader()
+        config_file = tmp_path / "config.json"
+        config_file.write_text("{ invalid }")
+        defaults = {"key": "default"}
+        
+        result = loader.load_with_defaults(str(config_file), defaults)
+        assert result == defaults
+    
+    def test_load_with_defaults_none_defaults(self, tmp_path):
+        loader = ConfigLoader()
+        config_file = tmp_path / "missing.json"
+        
+        result = loader.load_with_defaults(str(config_file))
+        assert result == {}
+    
     def test_save_json(self, tmp_path):
         loader = ConfigLoader()
         config_file = tmp_path / "config.json"

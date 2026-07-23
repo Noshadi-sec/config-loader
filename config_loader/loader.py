@@ -50,6 +50,28 @@ class ConfigLoader:
         
         return {}
     
+    def load_with_defaults(self, filepath, defaults=None):
+        """Load a configuration file with fallback to defaults.
+        
+        If the file does not exist or cannot be parsed, returns the
+        provided defaults. Useful for optional configuration files.
+        
+        Args:
+            filepath: Path to the configuration file.
+            defaults: Default configuration dictionary to use if load fails.
+                     Defaults to empty dict if not provided.
+            
+        Returns:
+            dict: Parsed configuration data or defaults.
+        """
+        if defaults is None:
+            defaults = {}
+        
+        try:
+            return self.load(filepath)
+        except (FileNotFoundError, ValueError, IOError):
+            return defaults
+    
     def save(self, data, filepath):
         """Save configuration data to a file.
         
