@@ -72,6 +72,37 @@ class ConfigLoader:
         except (FileNotFoundError, ValueError, IOError):
             return defaults
     
+    def get(self, config, key, default=None):
+        """Get a nested value from configuration using dot notation.
+        
+        Supports accessing nested dictionary values using dot-separated
+        keys. For example, 'database.host' will access config['database']['host'].
+        
+        Args:
+            config: Configuration dictionary to search.
+            key: Key path using dot notation (e.g., 'section.subsection.key').
+            default: Value to return if key is not found. Defaults to None.
+            
+        Returns:
+            The value at the specified key path, or default if not found.
+            
+        Raises:
+            TypeError: If config is not a dictionary.
+        """
+        if not isinstance(config, dict):
+            raise TypeError("Configuration must be a dictionary")
+        
+        keys = key.split('.')
+        current = config
+        
+        for k in keys:
+            if isinstance(current, dict) and k in current:
+                current = current[k]
+            else:
+                return default
+        
+        return current
+    
     def save(self, data, filepath):
         """Save configuration data to a file.
         

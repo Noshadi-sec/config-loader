@@ -153,6 +153,56 @@ inner = "data"
         result = loader.load_with_defaults(str(config_file))
         assert result == {}
     
+    def test_get_simple_key(self):
+        loader = ConfigLoader()
+        config = {"key": "value", "number": 42}
+        
+        assert loader.get(config, "key") == "value"
+        assert loader.get(config, "number") == 42
+    
+    def test_get_nested_key(self):
+        loader = ConfigLoader()
+        config = {"database": {"host": "localhost", "port": 5432}}
+        
+        assert loader.get(config, "database.host") == "localhost"
+        assert loader.get(config, "database.port") == 5432
+    
+    def test_get_deeply_nested_key(self):
+        loader = ConfigLoader()
+        config = {"app": {"db": {"connection": {"timeout": 30}}}}
+        
+        assert loader.get(config, "app.db.connection.timeout") == 30
+    
+    def test_get_missing_key_returns_default(self):
+        loader = ConfigLoader()
+        config = {"key": "value"}
+        
+        assert loader.get(config, "missing") is None
+        assert loader.get(config, "missing", "default") == "default"
+    
+    def test_get_missing_nested_key_returns_default(self):
+        loader = ConfigLoader()
+        config = {"database": {"host": "localhost"}}
+        
+        assert loader.get(config, "database.port") is None
+        assert loader.get(config, "database.port", 5432) == 5432
+    
+    def test_get_invalid_path_returns_default(self):
+        loader = ConfigLoader()
+        config = {"key": "value"}
+        
+        assert loader.get(config, "key.nested") is None
+        assert loader.get(config, "key.nested", "default") == "default"
+    
+    def test_get_non_dict_config_raises_typeerror(self):
+        loader = ConfigLoader()
+        
+        with pytest.raises(TypeError, match="must be a dictionary"):
+            loader.get([1, 2, 3], "key")
+        
+        with pytest.raises(TypeError, match="must be a dictionary"):
+            loader.get("string", "key")
+    
     def test_save_json(self, tmp_path):
         loader = ConfigLoader()
         config_file = tmp_path / "config.json"
