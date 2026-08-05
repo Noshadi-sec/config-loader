@@ -203,6 +203,75 @@ inner = "data"
         with pytest.raises(TypeError, match="must be a dictionary"):
             loader.get("string", "key")
     
+    def test_merge_simple_dicts(self):
+        loader = ConfigLoader()
+        base = {"a": 1, "b": 2}
+        override = {"b": 3, "c": 4}
+        
+        result = loader.merge(base, override)
+        assert result == {"a": 1, "b": 3, "c": 4}
+    
+    def test_merge_nested_dicts(self):
+        loader = ConfigLoader()
+        base = {"db": {"host": "localhost", "port": 5432}}
+        override = {"db": {"port": 3306}}
+        
+        result = loader.merge(base, override)
+        assert result == {"db": {"host": "localhost", "port": 3306}}
+    
+    def test_merge_deeply_nested(self):
+        loader = ConfigLoader()
+        base = {"app": {"db": {"conn": {"timeout": 30, "retry": 3}}}}
+        override = {"app": {"db": {"conn": {"timeout": 60}}}}
+        
+        result = loader.merge(base, override)
+        assert result["app"]["db"]["conn"]["timeout"] == 60
+        assert result["app"]["db"]["conn"]["retry"] == 3
+    
+    def test_merge_replace_non_dict_values(self):
+        loader = ConfigLoader()
+        base = {"key": "old_value"}
+        override = {"key": "new_value"}
+        
+        result = loader.merge(base, override)
+        assert result["key"] == "new_value"
+    
+    def test_merge_does_not_modify_inputs(self):
+        loader = ConfigLoader()
+        base = {"a": 1}
+        override = {"b": 2}
+        
+        result = loader.merge(base, override)
+        assert base == {"a": 1}
+        assert override == {"b": 2}
+        assert result == {"a": 1, "b": 2}
+    
+    def test_merge_base_not_dict_raises_typeerror(self):
+        loader = ConfigLoader()
+        
+        with pytest.raises(TypeError, match="Base configuration must be a dictionary"):
+            loader.merge([1, 2], {"a": 1})
+    
+    def test_merge_override_not_dict_raises_typeerror(self):
+        loader = ConfigLoader()
+        
+        with pytest.raises(TypeError, match="Override configuration must be a dictionary"):
+            loader.merge({"a": 1}, [1, 2])
+    
+    def test_merge_empty_dicts(self):
+        loader = ConfigLoader()
+        
+        result = loader.merge({}, {})
+        assert result == {}
+    
+    def test_merge_empty_override(self):
+        loader = ConfigLoader()
+        base = {"a": 1, "b": 2}
+        
+        result = loader.merge(base, {})
+        assert result == base
+        assert result is not base  # Should be a copy
+    
     def test_save_json(self, tmp_path):
         loader = ConfigLoader()
         config_file = tmp_path / "config.json"

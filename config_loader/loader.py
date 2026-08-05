@@ -103,6 +103,38 @@ class ConfigLoader:
         
         return current
     
+    def merge(self, base, override):
+        """Recursively merge override configuration into base.
+        
+        Performs a deep merge where override values take precedence over
+        base values. Nested dictionaries are merged recursively, while
+        non-dict values from override completely replace base values.
+        
+        Args:
+            base: Base configuration dictionary.
+            override: Override configuration dictionary to merge in.
+            
+        Returns:
+            dict: Merged configuration with override values taking precedence.
+            
+        Raises:
+            TypeError: If either base or override is not a dictionary.
+        """
+        if not isinstance(base, dict):
+            raise TypeError("Base configuration must be a dictionary")
+        if not isinstance(override, dict):
+            raise TypeError("Override configuration must be a dictionary")
+        
+        result = base.copy()
+        
+        for key, value in override.items():
+            if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+                result[key] = self.merge(result[key], value)
+            else:
+                result[key] = value
+        
+        return result
+    
     def save(self, data, filepath):
         """Save configuration data to a file.
         
